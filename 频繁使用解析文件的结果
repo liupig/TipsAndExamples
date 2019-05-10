@@ -1,0 +1,21 @@
+处理问题：在开发中，需要频繁的使用到用某种方法解析某个文件的结果。
+
+DB： redis or SQL
+
+解决方案：
+fileame 作为Key  存在redis中， value是 [ 文件最新修改时间， 解析结果  ]
+
+def GetResult(fileame):   
+    if (fileame in redisKey)  and value and 当前文件的修改时间 == value中的[文件最新修改时间]：
+        data = redis 中 fileame 的 value[ 解析结果]
+        return data
+    else：
+         data = ParseFunction(fileame)# 调用解析函数得到解析结果
+         将 {filename : [文件最新修改时间， data ]} 存入redis 中
+         return data
+         
+更改解析函数时需要重新上传文件才可生效，修改文件不修改解析函数会立即生效。
+也可用filename + 解析函数名 作为KEY,  适配一个文件多种解析结果
+         
+ 
+
