@@ -1,0 +1,17 @@
+import re
+ConfirmPhoneSortPattern = r'第(\d{1,})|(\d{1,})(个|哥)'
+ConfirmPhoneTailPattern = r'(\d{4,})'
+def SelectPhoneNum(message, phoneNums):
+    bySort = re.search(ConfirmPhoneSortPattern, message)    
+    if bySort:
+        bySort = int(bySort.group(1) or bySort.group(2))
+        if 1 <= bySort <= len(phoneNums):
+            return phoneNums[bySort-1]
+    byTail = re.search(ConfirmPhoneTailPattern, message)
+    if byTail:
+        byTail = byTail.group(1)[-4:]
+        for phoneNum in phoneNums:
+            if phoneNum[-4:] == byTail:
+                return phoneNum
+    
+    return None
