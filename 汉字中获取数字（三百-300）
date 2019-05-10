@@ -1,0 +1,46 @@
+import re
+NumDict = {'一':1, '二':2, '三':3, '四':4, '五':5, '六':6, '七':7, '八':8, '九':9, '两':2, '零':0, '十':10, '百':100, '千':1000, '万':10000}
+Number = [['一', '二', '三', '四', '五', '六', '七', '八', '九'], ['万','千','百','十','','']]
+NumStrDict = {'一':'1', '二':'2', '三':'3', '四':'4', '五':'5', '六':'6', '七':'7', '八':'8', '九':'9', '两':'2', '零':'0'}
+
+def RefineName(text):
+    if not isinstance(text, str):
+        return text
+    for k, v in NumStrDict.items():
+        text = text.replace(k, v)
+    return text
+
+def GetUserAnswer(userMessage):
+    userAnswers = []
+    result = re.search(r'(\d{1,})', userMessage)
+    if result:
+        userAnswers.append(int(result.group(1)))
+    if all([num not in userMessage for num in Number[1][0:4]]):
+        result = re.search(r'(\d{1,})', RefineName(userMessage))
+        if result:
+            userAnswers.append(int(result.group(1)))
+    for num in Number[0]:
+        for i in range(len(Number[1])-2):
+            if Number[1][i]+num in userMessage and all([Number[1][i] + num + item not in userMessage for item in Number[1][i+1:-2]]): # "三万三"  --> '三万三千'
+                userMessage = userMessage.replace(Number[1][i] + num, Number[1][i] + num + Number[1][i+1])
+    total = 0
+    unit = 1
+    for i in range(len(userMessage) - 1, -1, -1):
+        number = NumDict.get(userMessage[i]) or 0
+        if number >= 10 and i == 0:
+          if number > unit:
+            unit = number
+            total = total + number
+          else:
+            unit = unit * number
+        elif number >= 10:
+          if number > unit:
+            unit = number
+          else:
+            unit = unit * number
+        else:
+          total = total + unit * number
+    if total:
+        userAnswers.append(total)
+    return userAnswers
+print(GetUserAnswer('三千三百万'))
