@@ -1,0 +1,6 @@
+https://blog.csdn.net/sodalife/article/details/79682002'
+
+注意，更改文件后需要
+sudo service apache2 reload 
+sudo a2ensite 项目名称.conf
+sudo service apache2 restart
