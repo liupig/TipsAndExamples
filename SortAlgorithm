@@ -1,0 +1,13 @@
+def BubbleSort(sortlist):#冒泡排序 O（n^2）, O(n) ,O(1)
+    for y in range(len(sortlist)):
+        isChange = False
+        for i in range(len(sortlist)-y-1):
+            if sortlist[i] > sortlist[i+1] :
+                isChange = True
+                temp = sortlist[i]
+                sortlist[i] = sortlist[i+1]
+                sortlist[i+1] = temp
+        print(sortlist,y)
+        if not isChange:
+            break #or return sortlist    
+    return sortlist
