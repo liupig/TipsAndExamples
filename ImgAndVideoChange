@@ -1,0 +1,31 @@
+def UnlockMovie(path):
+    #""" 将视频转换成图片
+    #path: 视频路径 """
+    cap = cv2.VideoCapture(path)
+    suc = cap.isOpened()  # 是否成功打开
+    frameCount = 0
+    while suc:
+        frameCount += 1
+        suc, frame = cap.read()
+        params = []
+        params.append(2)  # params.append(1)
+        cv2.imwrite('sf/%d.jpg' % frameCount, frame, params)
+    cap.release()
+    print('unlock movie: ', frameCount)
+    
+def ImgToVideo(videoName = 'V5.mp4', imgPath = 'P/', fps = 40):
+    #""" 将图片合成视频. path: 视频路径，fps: 帧率 """
+    vw = cv2.VideoWriter(videoName, cv2.VideoWriter_fourcc(*'MJPG'), 25, (640,480))
+    allImg = os.listdir(imgPath) #方法用于返回指定的文件夹包含的文件或文件夹的名字的列表
+    for i in range(1, len(allImg)):
+        imgName = '%s.jpg' % i
+        try:
+            img  = cv2.imread(imgPath + imgName)
+            img = cv2.resize(img,(640,480))
+            vw.write(img)
+        except:
+            print(imgName)
+    vw.release()
+ 
+ # 图片合成视频，视频可能无法播放，使用potplayer播放器： http://potplayer.daum.net/?lang=zh_CN。
+ #或搜我的享目potplayer，我将播放器上传了。
