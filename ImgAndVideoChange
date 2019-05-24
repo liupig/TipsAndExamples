@@ -28,4 +28,3 @@ def ImgToVideo(videoName = 'V5.mp4', imgPath = 'P/', fps = 40):
     vw.release()
  
  # 图片合成视频，视频可能无法播放，使用potplayer播放器： http://potplayer.daum.net/?lang=zh_CN。
- #或搜我的享目potplayer，我将播放器上传了。
