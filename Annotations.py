@@ -5,7 +5,6 @@ Created on Fri Jul 26 15:24:55 2019
 @author: Sissss
 """
 
-
 txt = '我们想去北京'
 sign = '北京'
 def GetResult(txt, sign):
