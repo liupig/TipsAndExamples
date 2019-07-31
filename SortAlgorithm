@@ -9,3 +9,24 @@ def BubbleSort(sortlist):
         if not isChange:
             break #or return sortlist    
     return sortlist
+    
+def QuickSort(L, start, end):
+    if start >= end:
+        return
+    left = start
+    right = end
+    middle = L[left]
+    while left < right:
+        while left < right and L[right] >= middle:
+            right -=1
+        L[left] = L[right]
+        while left< right and L[left] < middle:
+            left+=1
+        L[right] = L[left]
+    L[left] = middle
+    QuickSort(L, start, left-1)
+    QuickSort(L,left+1, end)
+
+L = [6,5,4,3,2,1]
+QuickSort(L, 0, 5)
+print(L)
