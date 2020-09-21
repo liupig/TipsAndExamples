@@ -1,12 +1,8 @@
-import json
-
-
-def dict_sort_by_key(data):
-    data = sorted(data.items(), key=lambda item: item[0])
-    return {i[0]: i[1] for i in data}
-
-
 def json_sort(input_data):
+    def dict_sort_by_key(data):
+        data = sorted(data.items(), key=lambda item: item[0])
+        return {i[0]: i[1] for i in data}
+
     if isinstance(input_data, dict):
         input_data = dict_sort_by_key(input_data)
         for k in input_data:
