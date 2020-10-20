@@ -1,0 +1,44 @@
+https://www.oschina.net/translate/serving-flask-with-nginx-on-ubuntu
+
+处理问题：
+
+安装sudo pip install uwsgi失败，
+
+启用ubuntu自带python3.6.
+
+
+安装python3.7
+
+--------------$ sudo apt update
+--------------$ sudo apt install python3.7
+
+
+apt-get install python3.7
+
+然后指定版本：
+update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1
+
+update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2
+
+apt-get install python3-pip
+
+sudo apt update
+sudo apt install python3-pip
+sudo apt install python-pip
+
+sudo apt-get install gcc
+
+sudo pip install uwsgi
+
+sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+
+apt-get install python3.7-dev
+
+sudo pip install uwsgi
+
+
+
+ok!!!
+
+
+
