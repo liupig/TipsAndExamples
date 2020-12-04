@@ -2,7 +2,7 @@ import re
 import pandas as pd
 import math
 import pkg_resources
-from configuration import CITY_DISTRIBUTION, TJD_SCOPE
+from configuration import CITY_DISTRIBUTION, SCOPE
 from db_operation.db_Initialize import PGInitialize, MYSQLInitialize
 
 MYSQL = MYSQLInitialize()
@@ -63,7 +63,7 @@ def get_data_mercator(max_lon, min_lon, max_lat, min_lat):
     northeast = lonlat_to_mercator(max_lon, max_lat)  # 右上点
     southwest = lonlat_to_mercator(min_lon, min_lat)  # 左下点
     point_list = []
-    span = int(int(TJD_SCOPE) / math.sqrt(2))
+    span = int(int(SCOPE) / math.sqrt(2))
     for x in range(int(southwest[0]), int(northeast[0] + span*2), span*2):
         for y in range(int(southwest[1]), int(northeast[1] + span*2), span*2):
             point_list.append(mercator_to_lonlat(x, y))
