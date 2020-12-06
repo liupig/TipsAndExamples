@@ -18,7 +18,7 @@ class PGInitialize(object):
 class MYSQLInitialize(object):
     def __init__(self):
         self.conn = pymysql.connect(host=MYSQL_HOST, port=int(MYSQL_PORT), user=MYSQL_USER, passwd=MYSQL_PASSWORD,
-                                    db=MYSQL_DATABASE)
+                                    db=MYSQL_DATABASE, charset='utf8')
         self.cursor = self.conn.cursor()
 
     def select(self, sql):
