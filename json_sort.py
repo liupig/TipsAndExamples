@@ -20,3 +20,6 @@ def json_sort(input_data):
     
 #  功能介绍: 处理json数据对比中字段顺序不一致的问题。
 #  json数据通过此处理再配合Beyond Compare 4 做数据对比，可降低大量的人工成本和时间。
+
+#或者直接使用web：http://cc-z.com:9099/textc
+#或者直接部署https://github.com/yang521/bing_etl_server
