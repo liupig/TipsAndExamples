@@ -1,0 +1,8 @@
+使用 pytest-cov： 
+下载 pytest-cov ：pip install pytest-cov；
+行覆盖：
+pytest --cov=online_fusion  ./tests/
+分支：
+pytest --cov=online_fusion --cov-branch ./tests/
+
+命令：pytest --cov-src --cov-report=html
