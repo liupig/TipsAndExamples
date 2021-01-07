@@ -7,7 +7,13 @@ INSERT_LIMIT_NUM = 60000
 
 class Case(object):
     def source_data_table_case(self):
+        """
+        源数据表中必须包含ID字段，ID作为每条字段的唯一识别符。PG中需实现id的自增长
+        CATEGORY字段不做强要求，如果需要再一个表中存多种类型的数据，需要该字段
+        :return:
+        """
         text = """
+        # PG中需实现id的自增长
         CREATE SEQUENCE IF NOT EXISTS upms_area_id_seq START 101;
         1)
         CREATE TABLE SOURCE_DATA_TABLE(
@@ -27,6 +33,10 @@ class Case(object):
         print(text)
 
     def status_table_case(self):
+        """
+        状态表表结构统一如下，只需更改表名即可。
+        :return:
+        """
         text = """
                 CREATE TABLE STATUS_TABLE_CASE(
                    ID INT NOT NULL,
