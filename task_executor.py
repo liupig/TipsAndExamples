@@ -1,5 +1,6 @@
 import time
 import psycopg2
+
 # from configuration import (PG_DATABASE, PG_HOST, PG_PASSWORD, PG_PORT, PG_USER)
 
 INSERT_LIMIT_NUM = 60000
@@ -50,14 +51,25 @@ class Case(object):
         print(text)
 
     def use_case(self):
-        text = """
-        PG = PGInitialize(PG_DATABASE, PG_USER, PG_PASSWORD, PG_HOST, PG_PORT)
-        task_executor = TaskExecutor("test_task", "SOURCE_DATA_TABLE", "STATUS_TABLE_CASE", PG)
-        task_executor.order_by_field_list = ["PROVINCE"]
-        task_executor.update_basic_data()
-        task_executor.run_job(udf, 100, 5)
-        """
-        print(text)
+        def udf(data):
+            print(data)
+            return data[0][0], 1
+
+        pg_database = ""
+        pg_user = ""
+        pg_password = ""
+        pg_host = ""
+        pg_port = 5432
+        task_name = "test6"
+        source_data_table = "source_data_table"
+        status_table = "status_table_case"
+        period = 60 * 10
+        cycle_index = 10
+        order_by_field_list = ["PROVINCE"]  # []
+        output_fields = ["ID", "PROVINCE"]
+        category = ""
+        run_task(udf, pg_database, pg_user, pg_password, pg_host, pg_port, task_name, source_data_table,
+                 status_table, period, cycle_index, category, order_by_field_list, output_fields)
 
 
 class PGInitialize(object):
@@ -99,11 +111,21 @@ class TaskExecutor(object):
         self.pg = pg
         self.category = None
         self.order_by_field_list = None
+        self.output_fields = None
 
     def set_sort_fields(self, fields):
         self.order_by_field_list = fields
 
-    def get_unprocessed_data(self, period, limit_num=1, output_fields=None):
+    def set_output_fields(self, fields):
+        if fields:
+            if not any([True for f in fields if f.lower() == "id"]):
+                raise ValueError("Missing ID field")
+        self.output_fields = fields
+
+    def set_category(self, category):
+        self.category = category
+
+    def get_unprocessed_data(self, period, limit_num=1):
         """
 
         :param limit_num:
@@ -113,7 +135,7 @@ class TaskExecutor(object):
         """
         current_time = time.time()
         time_interval = current_time - period
-        output_fields = ','.join([f"t1.{f}" for f in output_fields]) if output_fields else f"t1.*"
+        output_fields = ','.join([f"{f}" for f in self.output_fields]) if self.output_fields else f"*"
         order_by_text = "ORDER BY id" if self.order_by_field_list else ""
 
         sql = f"UPDATE {self.status_table} t1 SET status=1, start_time={current_time} " \
@@ -122,9 +144,11 @@ class TaskExecutor(object):
               f"AND end_time=0) " \
               f"{order_by_text} LIMIT {limit_num}) t2 " \
               f"WHERE t1.id=t2.id and t1.task_name=t2.task_name " \
-              f"RETURNING {output_fields}"
+              f"RETURNING t1.id"
 
-        return self.pg.update_returning(sql)
+        data = self.pg.update_returning(sql)
+        if data:
+            return self.pg.select(f"select {output_fields} from {self.source_data_table} where id = {data[0][0]}")
 
     def update_status(self, data_id):
         """
@@ -139,7 +163,7 @@ class TaskExecutor(object):
 
     def update_basic_data(self):
         start_time = time.time()
-        category = 'WHERE category=' + self.category if self.category else ''
+        category = f"WHERE category= '{self.category}'" if self.category else ''
         select_mun_sql = f"select count(1) from {self.source_data_table}"
 
         order_by_text = ("ORDER BY " + ', '.join(self.order_by_field_list)) if self.order_by_field_list else ""
@@ -148,6 +172,8 @@ class TaskExecutor(object):
         for i in range(int(data_sum / INSERT_LIMIT_NUM) + 1):
             select_sql = f"select id from {self.source_data_table} {category} " \
                          f"{order_by_text} LIMIT {INSERT_LIMIT_NUM} OFFSET {i}"
+
+            print(select_sql)
 
             data_ids = self.pg.select(select_sql)
             if data_ids:
@@ -178,18 +204,20 @@ class TaskExecutor(object):
 
 
 def run_task(udf, pg_database, pg_user, pg_password, pg_host, pg_port, task_name, source_data_table,
-             status_table, period, cycle_index, order_by_field_list=[]):
+             status_table, period, cycle_index, category, order_by_field_list=[], output_fields=[]):
     """
 
+    :param output_fields: Output source_data_table field to User-defined functions
+    :param category:
     :param udf: User-defined functions
-    :param pg_database:
+    :param pg_database: postgresql info
     :param pg_user:
     :param pg_password:
     :param pg_host:
     :param pg_port:
-    :param task_name:
-    :param source_data_table:
-    :param status_table:
+    :param task_name: task name
+    :param source_data_table: source data table name
+    :param status_table: status table name
     :param order_by_field_list: order by field list  like: ["PROVINCE"]
     :param period:  time period, Unit s
     :param cycle_index: cycle index
@@ -197,6 +225,8 @@ def run_task(udf, pg_database, pg_user, pg_password, pg_host, pg_port, task_name
     """
     PG = PGInitialize(pg_database, pg_user, pg_password, pg_host, pg_port)
     task_executor = TaskExecutor(task_name, source_data_table, status_table, PG)
-    task_executor.order_by_field_list = order_by_field_list
+    task_executor.set_sort_fields(order_by_field_list)
+    task_executor.set_output_fields(output_fields)
+    task_executor.set_category(category)
     task_executor.update_basic_data()
     task_executor.run_job(udf, period, cycle_index)
