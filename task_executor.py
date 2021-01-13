@@ -232,7 +232,7 @@ def run_task(udf, udf_external_params, pg_database, pg_user, pg_password, pg_hos
     :param source_data_table: source data table name
     :param status_table: status table name
     :param order_by_field_list: order by field list, e.g. ["PROVINCE"], default is []
-    :param period: time period, int, second, default is []
+    :param period: time period, int, second
     :param cycle_index: int, second
     :return:
     """
