@@ -1,10 +1,12 @@
 import time
 import psycopg2
 
+# from configuration import (PG_DATABASE, PG_HOST, PG_PASSWORD, PG_PORT, PG_USER)
+
 INSERT_LIMIT_NUM = 60000
 
 
-class UseCase(object):
+class Case(object):
     def source_data_table_case(self):
         """
         源数据表中必须包含ID字段，ID作为每条字段的唯一识别符。PG中需实现id的自增长
@@ -49,16 +51,16 @@ class UseCase(object):
         print(text)
 
     def use_case(self):
-        def udf(data, udf_data):
+        def udf(data):
             print(data)
-            return data[0]["id"], 1
+            return data[0][0], 1
 
-        pg_database = ""
-        pg_user = ""
-        pg_password = ""
-        pg_host = ""
+        pg_database = "db"
+        pg_user = "user"
+        pg_password = "pd"
+        pg_host = "127.0.0.1"
         pg_port = 5432
-        task_name = "test"
+        task_name = "test6"
         source_data_table = "source_data_table"
         status_table = "status_table_case"
         period = 60 * 10
@@ -66,7 +68,7 @@ class UseCase(object):
         order_by_field_list = ["PROVINCE"]  # []
         output_fields = ["ID", "PROVINCE"]
         category = ""
-        run_task(udf, [], pg_database, pg_user, pg_password, pg_host, pg_port, task_name, source_data_table,
+        run_task(udf, pg_database, pg_user, pg_password, pg_host, pg_port, task_name, source_data_table,
                  status_table, period, cycle_index, category, order_by_field_list, output_fields)
 
 
@@ -79,16 +81,6 @@ class PGInitialize(object):
     def select(self, sql):
         self.cursor.execute(sql)
         return self.cursor.fetchall()
-
-    def select_return_list_object(self, sql):
-        self.cursor.execute(sql)
-        rows = self.cursor.fetchall()
-        if rows:
-            list_header = [row[0] for row in self.cursor.description]
-            list_result = [[str(item) for item in row] for row in rows]
-            return [dict(zip(list_header, row)) for row in list_result]
-
-        return []
 
     def update_returning(self, sql):
         self.cursor.execute(sql)
@@ -156,8 +148,7 @@ class TaskExecutor(object):
 
         data = self.pg.update_returning(sql)
         if data:
-            return self.pg.select_return_list_object(
-                f"select {output_fields} from {self.source_data_table} where id = {data[0][0]}")
+            return self.pg.select(f"select {output_fields} from {self.source_data_table} where id = {data[0][0]}")
 
     def update_status(self, data_id):
         """
@@ -194,11 +185,10 @@ class TaskExecutor(object):
 
                 self.pg.insert(insert_sql)
 
-    def run_job(self, user_defined_functions, udf_external_params, period, cycle_index):
+    def run_job(self, user_defined_functions, period, cycle_index):
         """
 
         :param user_defined_functions:
-        :param udf_external_params:
         :param period:
         :param cycle_index:
         :return:
@@ -206,34 +196,31 @@ class TaskExecutor(object):
         for i in range(cycle_index):
             data = self.get_unprocessed_data(period)
             if data:
-                data_id, status = user_defined_functions(data, udf_external_params)
+                data_id, status = user_defined_functions(data)
                 if status:
                     self.update_status(data_id)
             else:
                 break
 
 
-def run_task(udf, udf_external_params, pg_database, pg_user, pg_password, pg_host, pg_port, task_name,
-             source_data_table,
-             status_table, period, cycle_index, category, order_by_field_list, output_fields):
+def run_task(udf, pg_database, pg_user, pg_password, pg_host, pg_port, task_name, source_data_table,
+             status_table, period, cycle_index, category, order_by_field_list=[], output_fields=[]):
     """
-        The function for run task
 
     :param output_fields: Output source_data_table field to User-defined functions
-    :param category: string, the field in source_data
+    :param category:
     :param udf: User-defined functions
-    :param udf_external_params: the external parameters of udf from configuration, here is a string
-    :param pg_database: string, postgresql database name
-    :param pg_user: string
-    :param pg_password: string
+    :param pg_database: postgresql info
+    :param pg_user:
+    :param pg_password:
     :param pg_host:
     :param pg_port:
     :param task_name: task name
     :param source_data_table: source data table name
     :param status_table: status table name
-    :param order_by_field_list: order by field list, e.g. ["PROVINCE"], default is []
-    :param period: time period, int, second
-    :param cycle_index: int, second
+    :param order_by_field_list: order by field list  like: ["PROVINCE"]
+    :param period:  time period, Unit s
+    :param cycle_index: cycle index
     :return:
     """
     PG = PGInitialize(pg_database, pg_user, pg_password, pg_host, pg_port)
@@ -242,4 +229,4 @@ def run_task(udf, udf_external_params, pg_database, pg_user, pg_password, pg_hos
     task_executor.set_output_fields(output_fields)
     task_executor.set_category(category)
     task_executor.update_basic_data()
-    task_executor.run_job(udf, udf_external_params, period, cycle_index)
+    task_executor.run_job(udf, period, cycle_index)
