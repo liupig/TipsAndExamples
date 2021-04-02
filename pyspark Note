@@ -1,0 +1,5 @@
+delta_data_df = hive_session.sql("select * from table_name")
+delta_data_df = delta_data_df.select("d", "name",)
+
+if not delta_data_df.rdd.isEmpty():
+    pass
