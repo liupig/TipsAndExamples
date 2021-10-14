@@ -1,4 +1,3 @@
-# from XiaoIceCmd import *
 import json
 import os
 import re
