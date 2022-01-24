@@ -40,3 +40,10 @@ pd.DataFrame(result[head:]).to_csv("tail.csv", encoding="utf8")
 # result.head(int(result_len * 0.8)).to_csv("head.csv", encoding="utf8")
 #
 # result.tail(result_len - head).to_csv("tail.csv", encoding="utf8")
+
+# 按列明第一个字母分类
+import pandas as pd
+df=pd.DataFrame({'name':['a40','b23','c22','c123'],'val':[100,110,120,130]})
+a=df.groupby([x[0] for x in df['name']])['val'].sum()
+print(a)
+
